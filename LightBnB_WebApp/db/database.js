@@ -1,8 +1,5 @@
 const { Pool } = require("pg");
 
-const properties = require("./json/properties.json");
-const users = require("./json/users.json");
-
 //Connect to ligntBnB database
 const pool = new Pool({
   user: "vagrant",
@@ -35,7 +32,7 @@ const getUserWithEmail = (email) => {
  * @param {string} id The id of the user.
  * @return {Promise<{}>} A promise to the user.
  */
-const getUserWithId = function (id) {
+const getUserWithId = function(id) {
   const values = [id];
   const queryString = `
   SELECT id, name, email, password
@@ -51,7 +48,7 @@ const getUserWithId = function (id) {
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function (user) {
+const addUser = function(user) {
   const { name, email, password } = user;
   const values = [name, email, password];
   const queryString = `
@@ -68,7 +65,7 @@ const addUser = function (user) {
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function (guest_id, limit = 10) {
+const getAllReservations = function(guest_id, limit = 10) {
   const values = [guest_id, limit];
   const queryString = `
   SELECT reservations.id AS id, properties.*, reservations.start_date,reservations.end_date, AVG(property_reviews.rating) AS average_rating
@@ -167,7 +164,7 @@ const getAllProperties = (options, limit = 10) => {
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
-const addProperty = function (property) {
+const addProperty = function(property) {
   const {
     owner_id,
     title,
