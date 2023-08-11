@@ -95,20 +95,82 @@ const getAllReservations = function (guest_id, limit = 10) {
  */
 //Query lightBnB postgresSQL database
 const getAllProperties = (options, limit = 10) => {
-  const values = [limit];
-  const queryString = `
-  SELECT *
-  FROM properties
-  LIMIT $1;`;
-  return pool
-    .query(queryString, values)
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      return err.message;
-    });
+  const values = [];
+  let queryString = `
+  SELECT properties.*, AVG(rating) AS average_rating 
+  FROM property_reviews
+  RIGHT JOIN properties ON properties.id = property_reviews.property_id
+  `;
+  // add option to query using WHERE
+  if (options.city) {
+    //trim whitespace, remove first letter(s) from words,and replace space with wildcard, and ensure all chars are lowercase
+    const location = options.city
+      .trim()
+      .split(" ")
+      .map((word) => word.slice(1))
+      .join("%")
+      .toLowerCase();
+
+    values.push(`%${location}%`);
+    queryString += `WHERE city LIKE $${values.length} `;
+  }
+
+  // add option to query using WHERE or AND
+  if (options.minimum_price_per_night) {
+    values.push(`${options.minimum_price_per_night * 100}`);
+    queryString +=
+      values.length > 1
+        ? `AND cost_per_night >= $${values.length} `
+        : `WHERE cost_per_night >= $${values.length} `;
+  }
+
+  // add option to query using WHERE or AND
+  if (options.maximum_price_per_night) {
+    values.push(`${options.maximum_price_per_night * 100}`);
+    queryString +=
+      values.length > 1
+        ? `AND cost_per_night <= $${values.length} `
+        : `WHERE cost_per_night <= $${values.length} `;
+  }
+
+  // add option to query using WHERE
+  if (options.owner_id) {
+    values.push(options.owner_id);
+    queryString += `WHERE owner_id = $${values.length} `;
+  }
+
+  // add option to query using HAVING to filter on GROUP BY
+  if (options.minimum_rating) {
+    values.push(options.minimum_rating);
+    values.push(limit);
+    queryString += `
+  GROUP BY properties.id
+  HAVING AVG(property_reviews.rating) >= $${values.length - 1}
+  ORDER BY cost_per_night
+  LIMIT $${values.length} `;
+  } else {
+    values.push(limit);
+    queryString += `
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $${values.length} `;
+  }
+
+  return pool.query(queryString, values).then((result) => {
+    return result.rows;
+  });
 };
+
+/*
+SELECT properties.*, AVG(rating) AS average_rating 
+FROM property_reviews
+RIGHT JOIN properties ON properties.id = property_reviews.property_id
+WHERE city LIKE '%ancouv%' 
+GROUP BY properties.id
+HAVING AVG(property_reviews.rating) >= 4
+ORDER BY cost_per_night
+LIMIT 10;
+*/
 
 /**
  * Add a property to the database
