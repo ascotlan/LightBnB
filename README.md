@@ -22,4 +22,4 @@ A simple mulit-page Airbnb clone that uses a server-side Javascript to display t
 
 ## ERD
 
-!["Screenshot of ERD"]()
+!["Screenshot of ERD"](https://github.com/ascotlan/lightBnB/blob/main/docs/LightBnB-LHL-ERD.png)
