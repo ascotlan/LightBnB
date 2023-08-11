@@ -17,5 +17,5 @@ A simple mulit-page Airbnb clone that uses a server-side Javascript to display t
   - Enter the lightbnb database (using the `\c lightbnb` command).
   - Create the tables (using the `\i ./migrations/01_schema.sql` command).
   - Seed the tables with sample data (using the `\i ./seeds/02_seeds.sql` command).
-- Install all dependencies (using the `./LightBnB_WebApp/npm install` command).
-- Run the development web server using the `./LightBnB_WebApp/npm run local` command.
+- From the LightBnB_WebApp directory, install all dependencies (using the `npm install` command).
+- From the LightBnB_WebApp directory, run the development web server (using the `npm run local` command).
