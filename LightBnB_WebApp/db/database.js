@@ -14,10 +14,11 @@ const pool = new Pool({
 /// Users
 
 // Query lightBnB postgreSQL database
-//  * Get a single user from the database given their email.
-//  * @param {String} email The email of the user.
-//  * @return {Promise<{}>} A promise to the user.
-//  */
+/**
+ * Get a single user from the database given their email.
+ * @param {String} email The email of the user.
+ * @return {Promise<{}>} A promise to the user.
+ */
 
 const getUserWithEmail = (email) => {
   const values = [`%${email}%`];
@@ -161,27 +162,66 @@ const getAllProperties = (options, limit = 10) => {
   });
 };
 
-/*
-SELECT properties.*, AVG(rating) AS average_rating 
-FROM property_reviews
-RIGHT JOIN properties ON properties.id = property_reviews.property_id
-WHERE city LIKE '%ancouv%' 
-GROUP BY properties.id
-HAVING AVG(property_reviews.rating) >= 4
-ORDER BY cost_per_night
-LIMIT 10;
-*/
-
 /**
  * Add a property to the database
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function (property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  const {
+    owner_id,
+    title,
+    description,
+    thumbnail_photo_url,
+    cover_photo_url,
+    cost_per_night,
+    street,
+    city,
+    province,
+    post_code,
+    country,
+    parking_spaces,
+    number_of_bathrooms,
+    number_of_bedrooms,
+  } = property;
+
+  const values = [
+    owner_id,
+    title,
+    description,
+    thumbnail_photo_url,
+    cover_photo_url,
+    cost_per_night * 100,
+    street,
+    city,
+    province,
+    post_code,
+    country,
+    parking_spaces,
+    number_of_bathrooms,
+    number_of_bedrooms,
+  ];
+
+  const queryString = `
+  INSERT INTO properties (owner_id,
+    title,
+    description,
+    thumbnail_photo_url,
+    cover_photo_url,
+    cost_per_night,
+    street,
+    city,
+    province,
+    post_code,
+    country,
+    parking_spaces,
+    number_of_bathrooms,
+    number_of_bedrooms)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`;
+
+  return pool.query(queryString, values).then((property) => {
+    return property.rows;
+  });
 };
 
 module.exports = {
